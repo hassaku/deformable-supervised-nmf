@@ -51,11 +51,11 @@ class DeformableSupervisedNMF(BaseEstimator, TransformerMixin):
 
         self.progress = progress
 
-        self.supervised_features_list = self.__fit_fg(X_list, max_iter_list=supervised_max_iter_list)
+        self.supervised_features_list = self.__fit_supervised(X_list, max_iter_list=supervised_max_iter_list)
         self.unknown_features = None
 
     def fit_transform(self, X, y=None):
-        return self.__fit_bg_deformable(X)
+        return self.__fit_deformable(X)
 
     def fit(self, X, y=None, **params):
         self.fit_transform(X, y)
@@ -65,7 +65,7 @@ class DeformableSupervisedNMF(BaseEstimator, TransformerMixin):
         if self.progress:
             print(msg)
 
-    def __fit_fg(self, X_list, max_iter_list):
+    def __fit_supervised(self, X_list, max_iter_list):
         supervised_features_list = []
 
         for xi, xdata in enumerate(X_list):
@@ -92,21 +92,21 @@ class DeformableSupervisedNMF(BaseEstimator, TransformerMixin):
                     break
                 self.__debug("%d: %f" % (curr_iter, rse))
 
-            supervised_features_list.append(H0)  # consider with abs(X)
+            supervised_features_list.append(H0)
 
         return supervised_features_list
 
-    def __fit_bg_deformable(self, X):
+    def __fit_deformable(self, X):
         Z = np.mat(abs(X)).T
         dims, samples = Z.shape
 
-        fg_basis = np.vstack(self.supervised_features_list)
-        fg_basis_dims = fg_basis.shape[0]
+        supervised_features = np.vstack(self.supervised_features_list)
+        supervised_features_dims = supervised_features.shape[0]
 
-        F = np.array(abs(fg_basis)).T
-        D = np.array(np.random.rand(dims, fg_basis_dims))
+        F = np.array(abs(supervised_features)).T
+        D = np.array(np.random.rand(dims, supervised_features_dims))
         H = np.array(np.random.rand(dims, self.__unknown_components))
-        G = np.array(np.random.rand(fg_basis_dims, samples))
+        G = np.array(np.random.rand(supervised_features_dims, samples))
         U = np.array(np.random.rand(self.__unknown_components, samples))
 
         for it in range(self.__unknown_max_iter):
@@ -115,16 +115,16 @@ class DeformableSupervisedNMF(BaseEstimator, TransformerMixin):
 
             self.__debug("%d: %f(rse), %f(update_value)" % (it, rse, update_value))
             if update_value < self.__tolerance:
-                self.__debug("Finished (last update value: %f)" % update_value)
                 break
 
         bias = 0
-        for fgi, fg_dims in enumerate(self.__supervised_components_list):
-            self.supervised_features_list[fgi] = fg_basis[bias:fg_dims+bias, :]
-            bias += fg_dims
+        for ci, components in enumerate(self.__supervised_components_list):
+            self.supervised_features_list[ci] = supervised_features[bias:components+bias, :]
+            bias += components
 
-        self.unknown_features = np.dot(np.mat(X).T - np.dot(fg_basis.T, G), U.I).T
+        self.unknown_features = np.dot(np.mat(X).T - np.dot(supervised_features.T, G), U.I).T
 
+        self.__debug("Finished (last update value: %f)" % update_value)
         return self.supervised_features_list + [self.unknown_features]
 
     def __update(self, Z, F, D, H, G, U, mu, eta=0.3, it=None):
