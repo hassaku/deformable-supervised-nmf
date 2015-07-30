@@ -14,4 +14,4 @@ dsnmf = DeformableSupervisedNMF(supervised_components_list=[5, 5], unknown_compo
 deformed_features1, deformed_features2, unknown_features = dsnmf.fit_transform(composing_data)
 ```
 
-![sample result](https://raw.github.com/wiki/hassaku/deformable-supervised-nmf/screen_shots/result.png)
+![sample result](https://raw.githubusercontent.com/hassaku/deformable-supervised-nmf/master/screen_shots/result.png)
