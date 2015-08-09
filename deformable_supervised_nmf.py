@@ -110,10 +110,10 @@ class DeformableSupervisedNMF(BaseEstimator, TransformerMixin):
         U = np.array(np.random.rand(self.__unknown_components, samples))
 
         for it in range(self.__unknown_max_iter):
-            self.__debug("D: %f, H: %f, G: %f, U:%f" % (D.max(), H.max(), G.max(), U.max()))
-            D, H, G, U, rse, update_value = self.__update(Z, F, D, H, G, U, mu=self.mu_list, eta=self.eta, it=it)
-
-            self.__debug("%d: %f(rse), %f(update_value)" % (it, rse, update_value))
+            D, H, G, U, rse, update_value = self.__update(Z, F, D, H, G, U,
+                                                          mu=self.mu_list, eta=self.eta, it=it)
+            self.__debug("%d: F+D: %f, H: %f, G: %f, U:%f rse:%f" %
+                         (it, (F+D).mean(), H.mean(), G.mean(), U.mean(), rse))
             if update_value < self.__tolerance:
                 break
 
