@@ -3,6 +3,12 @@
 Deformable Supervised NMF
 =======
 
+# Install
+
+```
+pip install git+https://github.com/hassaku/deformable-supervised-nmf.git
+```
+
 # Usage
 
 ```
